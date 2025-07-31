@@ -8,6 +8,10 @@ class StudentRepository extends BaseRepository {
     super(Student);
   }
 
+  async findAllStudents() {
+    return this.model.find({ });
+  }
+
   async findByTrainer(trainerId) {
     return this.model.find({ assignedTrainer: trainerId });
   }

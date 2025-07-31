@@ -1,5 +1,5 @@
 import Hr from "../../models/user/Hr";
-import BaseRepository from "./BaseRepository";
+import BaseRepository from "../BaseRepository";
 
 
 class HRRepository extends BaseRepository {

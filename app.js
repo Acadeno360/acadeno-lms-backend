@@ -5,6 +5,7 @@ import connectDB from './config/db.js'
 import logger from './utils/logger.js'
 import errorHandler from './middlewares/errorHandler.js'
 import userRouter from './routes/users/userRoutes.js'
+import courseRouter from './routes/course/courseRoutes.js'
 
 dotenv.config()  // configure env variables
 
@@ -28,6 +29,8 @@ app.get('/', (req, res)=> {
 })
 
 app.use('/api/v1/user', userRouter)
+
+app.use('/api/v1/course', courseRouter)
 
 // 404 handler
 // app.all('*', (req, res, next) => {

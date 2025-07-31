@@ -1,5 +1,5 @@
 import Trainer from "../../models/user/Trainer";
-import BaseRepository from "./BaseRepository";
+import BaseRepository from "../BaseRepository";
 
 
 class TrainerRepository extends BaseRepository {

@@ -8,7 +8,7 @@ import User from '../models/user/index.js'
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
-console.log(MONGODB_URI, 'UTI')
+
 
 const createSuperAdmin = async () => {
   try {

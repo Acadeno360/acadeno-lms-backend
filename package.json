@@ -5,12 +5,14 @@
   "type": "module",
   "scripts": {
     "start": "nodemon app.js",
-    "test": "test"
+    "test": "test",
+    "create-admin": "node migrations/createAdmin.js"
   },
   "author": "sarath",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",

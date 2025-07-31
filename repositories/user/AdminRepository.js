@@ -15,6 +15,11 @@ class AdminRepository extends BaseRepository {
     const admin = await this.model.findById(adminId);
     return admin?.privileges.includes(privilege);
   }
+
+  async findAllAdmins() {
+    const admin = await this.model.findById(adminId);
+    return admin?.privileges.includes(privilege);
+  }
 }
 
 export default new AdminRepository();

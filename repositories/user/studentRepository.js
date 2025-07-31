@@ -1,6 +1,6 @@
 
 import Student from '../../models/user/student.js';
-import BaseRepository from '../BaseRepository.js';
+import BaseRepository from './BaseRepository.js';
 
 
 class StudentRepository extends BaseRepository {

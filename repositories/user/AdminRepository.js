@@ -1,5 +1,5 @@
 import Admin from "../../models/user/Admin";
-import BaseRepository from "../BaseRepository";
+import BaseRepository from "./BaseRepository";
 
 
 class AdminRepository extends BaseRepository {

@@ -6,6 +6,7 @@ import logger from './utils/logger.js'
 import errorHandler from './middlewares/errorHandler.js'
 import userRouter from './routes/users/userRoutes.js'
 import courseRouter from './routes/course/courseRoutes.js'
+import swaggerDocs from './swagger.js'
 
 dotenv.config()  // configure env variables
 
@@ -28,6 +29,8 @@ app.get('/', (req, res)=> {
   res.send('Hello world')
 })
 
+swaggerDocs(app);
+
 app.use('/api/v1/user', userRouter)
 
 app.use('/api/v1/course', courseRouter)
@@ -45,6 +48,10 @@ app.use((err, req, res, next) => {
   logger.error(`${req.method} ${req.url} - ${err.message}`);
   res.status(500).send('Something went wrong');
 });
+
+
+
+
 
 // Start the server
 app.listen(port, () => {

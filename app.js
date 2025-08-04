@@ -21,9 +21,17 @@ connectDB()
   .catch(err => logger.error('❌ MongoDB connection error: ' + err));
 
 app.use(express.urlencoded({ extended: true })); // Enable parsing of URL-encoded request bodies
+
+// app.options('*', cors()); // Enable pre-flight for all routes
+
 app.use(cors({
-    origin: '*',
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// app.options('*', cors()); // <<< THIS LINE IS CRITICAL
+
 
 app.get('/', (req, res)=> {
   res.send('Hello world')

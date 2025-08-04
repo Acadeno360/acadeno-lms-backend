@@ -4,8 +4,8 @@ import mongoose from 'mongoose';
 const options = { timestamps: true };
 
 const courseSchema = new mongoose.Schema({
-  tile: { type: String, required: true },
-  type: { type: String }, // Sparse allows null for some roles
+  title: { type: String, required: true },
+  type: { type: String, enum: ['internship', 'course_project'], default: 'internship' },
   createdBy: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' }, 
   duration: {
     years: { type: Number },

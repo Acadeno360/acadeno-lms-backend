@@ -3,12 +3,12 @@ import mongoose from 'mongoose';
 
 const TrainerSchema = new mongoose.Schema({
   expertise: [String],
-  courseIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
   availability: [{
-    day: String, // e.g., "Monday"
+    day: String,
     startTime: String,
     endTime: String
   }],
+  position: { type: String, enum: [], default: 'other' },
   bio: { type: String },
   isActive: { type: Boolean, default: true }
 });

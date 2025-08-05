@@ -6,5 +6,7 @@ const studentRouter = Router()
 
 studentRouter.get('/list', studentControllers.fetchAllStudents)
 
+studentRouter.post('/create', studentControllers.createStudent)
+
 
 export default studentRouter

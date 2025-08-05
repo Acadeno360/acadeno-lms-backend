@@ -1,10 +1,14 @@
-import Trainer from "../../models/user/Trainer";
-import BaseRepository from "../BaseRepository";
+import Trainer from "../../models/user/Trainer.js";
+import BaseRepository from "../BaseRepository.js";
 
 
 class TrainerRepository extends BaseRepository {
   constructor() {
     super(Trainer);
+  }
+
+  async findAllTrainers() {
+    return this.model.find({});
   }
 
   async getAvailableTrainers() {

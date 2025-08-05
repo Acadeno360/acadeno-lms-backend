@@ -1,5 +1,5 @@
-import Parent from "../../models/user/Parent";
-import BaseRepository from "../BaseRepository";
+import Parent from "../../models/user/Parent.js";
+import BaseRepository from "../BaseRepository.js";
 
 ;
 

@@ -8,7 +8,8 @@ const UserSchema = new mongoose.Schema({
   password: { type: String }, // not required for parents without login
   phone: { type: String },
   profileImage: { type: String },
-  gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' }
+  gender: { type: String, enum: ['male', 'female', 'other'], default: 'other' },
+  position: { type: String, default: null}
 }, options);
 
 export default mongoose.model('User', UserSchema);

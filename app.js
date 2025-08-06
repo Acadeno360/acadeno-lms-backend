@@ -22,7 +22,7 @@ connectDB()
 
 app.use(express.urlencoded({ extended: true })); // Enable parsing of URL-encoded request bodies
 
-// app.options('*', cors()); // Enable pre-flight for all routes
+
 
 app.use(cors({
   origin: '*',
@@ -30,8 +30,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// app.options('*', cors()); // <<< THIS LINE IS CRITICAL
-
+app.use(express.static('public'));
 
 app.get('/', (req, res)=> {
   res.send('Hello world')

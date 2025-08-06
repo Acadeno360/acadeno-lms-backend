@@ -35,65 +35,53 @@ const userRouter = Router()
  *           example: 2024-08-01T07:10:47.403Z
  */
 
-
 /**
  * @swagger
- * /api/v1/users/auth/login:
+ * /api/v1/user/auth/login:
  *   post:
  *     summary: User login
+ *     description: Authenticate a user with email, password, and role. Returns a JWT token for subsequent API calls.
  *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *               - role
- *             properties:
- *               email:
- *                 type: string
- *                 example: user@example.com
- *               password:
- *                 type: string
- *                 example: password123
- *               role:
- *                 type: string
- *                 example: student
+ *             $ref: '#/components/schemas/LoginRequest'
  *     responses:
  *       200:
  *         description: Successful login
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                   example: success
- *                 token:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
+ *               $ref: '#/components/schemas/LoginResponse'
  *       400:
- *         description: Missing email, password or role
+ *         description: Bad request - Missing email, password or role
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       401:
- *         description: Invalid credentials
+ *         description: Unauthorized - Invalid credentials
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 userRouter.post('/auth/login', authController.login )
 
-
-
 /**
  * @swagger
- * /api/v1/users/auth:
+ * /api/v1/user/auth/me:
  *   get:
  *     summary: Get authenticated user details
+ *     description: Retrieve the current authenticated user's profile information using the JWT token.
  *     tags: [Auth]
  *     security:
  *       - bearerAuth: []
@@ -115,12 +103,21 @@ userRouter.post('/auth/login', authController.login )
  *                       $ref: '#/components/schemas/User'
  *       401:
  *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 userRouter.get('/auth/me', authenticate, authController.getMe)
 
 userRouter.use('/student', studentRouter)
 
 userRouter.use('/trainer', trainerRouter)
-
 
 export default userRouter

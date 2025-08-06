@@ -1,23 +1,48 @@
 import { Router } from "express";
 import trainerController from "../../controllers/users/trainerController.js";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { authorize } from "../../middlewares/authorize.js";
 
 const trainerRouter = Router()
 
-
-
-
-
 /**
  * @swagger
- * /api/v1/trainer/list:
- *   post:
+ * /api/v1/user/trainer/list:
+ *   get:
  *     summary: Fetch all trainers
- *     tags: [Trainer]
+ *     description: Retrieve a list of all trainers in the system. This endpoint requires authentication and appropriate authorization.
+ *     tags: [Trainers]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of trainers per page
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *         description: Filter trainers by active status
+ *       - in: query
+ *         name: expertise
+ *         schema:
+ *           type: string
+ *         description: Filter trainers by expertise area
  *     responses:
  *       200:
- *         description: Trainer fetched successfully
+ *         description: Successfully retrieved trainers list
  *         content:
  *           application/json:
  *             schema:
@@ -26,26 +51,124 @@ const trainerRouter = Router()
  *                 status:
  *                   type: string
  *                   example: success
+ *                 results:
+ *                   type: number
+ *                   example: 15
  *                 data:
  *                   type: object
  *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
+ *                     trainers:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Trainer'
  *       401:
  *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-trainerRouter.get('/list', trainerController.fetchAllTrainers)
-
-
+trainerRouter.get('/list', authenticate, authorize('admin', 'trainer'), trainerController.fetchAllTrainers)
 
 /**
  * @swagger
- * /api/v1/trainer/all:
- *   get:
- *     summary: Create a new trainer 
- *     tags: [Trainer]
+ * /api/v1/user/trainer/create:
+ *   post:
+ *     summary: Create a new trainer
+ *     description: Create a new trainer account with the provided information. This endpoint requires admin authentication.
+ *     tags: [Trainers]
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - role
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Sarah Johnson"
+ *                 description: Full name of the trainer
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "sarah.johnson@example.com"
+ *                 description: Trainer's email address
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *                 description: Trainer's password (min 6 characters)
+ *                 minLength: 6
+ *               phone:
+ *                 type: string
+ *                 example: "+1234567890"
+ *                 description: Trainer's phone number
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *                 example: "female"
+ *                 description: Trainer's gender
+ *               profileImage:
+ *                 type: string
+ *                 example: "https://example.com/profile.jpg"
+ *                 description: URL to trainer's profile image
+ *               position:
+ *                 type: string
+ *                 example: "Senior Developer"
+ *                 description: Trainer's position or title
+ *               expertise:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["JavaScript", "React", "Node.js", "MongoDB"]
+ *                 description: Areas of expertise
+ *               availability:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     day:
+ *                       type: string
+ *                       example: "Monday"
+ *                     startTime:
+ *                       type: string
+ *                       example: "09:00"
+ *                     endTime:
+ *                       type: string
+ *                       example: "17:00"
+ *                 example:
+ *                   - day: "Monday"
+ *                     startTime: "09:00"
+ *                     endTime: "17:00"
+ *                   - day: "Wednesday"
+ *                     startTime: "10:00"
+ *                     endTime: "18:00"
+ *                 description: Trainer's availability schedule
+ *               bio:
+ *                 type: string
+ *                 example: "Experienced software developer with 5+ years in web development and a passion for teaching."
+ *                 description: Trainer's biography
+ *               isActive:
+ *                 type: boolean
+ *                 example: true
+ *                 description: Trainer's active status
  *     responses:
  *       200:
  *         description: Trainer created successfully
@@ -57,16 +180,45 @@ trainerRouter.get('/list', trainerController.fetchAllTrainers)
  *                 status:
  *                   type: string
  *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: trainer created successfully
  *                 data:
  *                   type: object
  *                   properties:
- *                     user:
- *                       $ref: '#/components/schemas/User'
+ *                     trainer:
+ *                       $ref: '#/components/schemas/Trainer'
+ *       400:
+ *         description: Bad request - Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       401:
  *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       409:
+ *         description: Conflict - Email already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
-trainerRouter.post('/create', trainerController.createTrainer)
-
-
+trainerRouter.post('/create', authenticate, authorize('admin'), trainerController.createTrainer)
 
 export default trainerRouter

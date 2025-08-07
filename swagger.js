@@ -22,7 +22,7 @@ const options = {
     },
     servers: [
       {
-        url: process.env.BASE_URL || "http://localhost:5000",
+        url: process.env.BASE_URL || `http://localhost:${process.env.PORT || 8000}`,
         description: "Development Server",
       },
       {
@@ -465,21 +465,41 @@ const options = {
         description: "Course management operations",
       },
       {
+        name: "File Upload",
+        description: "File upload and management operations",
+      },
+      {
         name: "Admin",
         description: "Administrative operations",
       },
     ],
   },
   apis: [
-    "./routes/users/*.js",
-    "./routes/course/*.js",
+    "./routes/**/*.js",
   ],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
 
+// Ensure the development server URL uses the correct port
+if (process.env.NODE_ENV !== 'production') {
+  const devServerUrl = `http://localhost:${process.env.PORT || 8000}`;
+  swaggerSpec.servers = swaggerSpec.servers.map(server => {
+    if (server.description === "Development Server") {
+      return { ...server, url: devServerUrl };
+    }
+    return server;
+  });
+}
+
 function swaggerDocs(app) {
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  // Add cache-busting headers for Swagger UI
+  app.use("/api-docs", (req, res, next) => {
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
+    next();
+  }, swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: "Maitexa LMS API Documentation",
     customfavIcon: "/favicon.ico",
@@ -489,11 +509,25 @@ function swaggerDocs(app) {
       filter: true,
       showExtensions: true,
       showCommonExtensions: true,
+      defaultModelsExpandDepth: 1,
+      defaultModelExpandDepth: 1,
+      docExpansion: 'list',
+      tryItOutEnabled: true,
+      requestInterceptor: (req) => {
+        // Ensure requests go to the correct port
+        if (req.url && req.url.startsWith('/api/')) {
+          req.url = req.url.replace('http://localhost:5000', 'http://localhost:8000');
+        }
+        return req;
+      },
     },
   }));
   
   app.get("/swagger.json", (req, res) => {
     res.setHeader("Content-Type", "application/json");
+    res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma", "no-cache");
+    res.setHeader("Expires", "0");
     res.send(swaggerSpec);
   });
   
@@ -504,6 +538,20 @@ function swaggerDocs(app) {
       message: "Maitexa LMS API is running",
       timestamp: new Date().toISOString(),
       version: "1.0.0",
+      server: {
+        port: process.env.PORT || 8000,
+        baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 8000}`,
+        environment: process.env.NODE_ENV || 'development'
+      }
+    });
+  });
+
+  // Swagger configuration check endpoint
+  app.get("/swagger-config", (req, res) => {
+    res.status(200).json({
+      servers: swaggerSpec.servers,
+      currentPort: process.env.PORT || 8000,
+      baseUrl: process.env.BASE_URL || `http://localhost:${process.env.PORT || 8000}`
     });
   });
 }

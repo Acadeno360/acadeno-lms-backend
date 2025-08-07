@@ -1,18 +1,20 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors'
+import path from 'path'
 import connectDB from './config/db.js'
 import logger from './utils/logger.js'
 import errorHandler from './middlewares/errorHandler.js'
 import userRouter from './routes/users/userRoutes.js'
 import courseRouter from './routes/course/courseRoutes.js'
+import fileUploadRouter from './routes/fileUploadRoutes.js'
 import swaggerDocs from './swagger.js'
+import FileUploadService from './services/FileUploadService.js'
 
 dotenv.config()  // configure env variables
 
 const app = express(); 
 const port = process.env.PORT || 8000; 
-
 
 app.use(express.json()); // Enable parsing of JSON request bodies
 
@@ -22,14 +24,16 @@ connectDB()
 
 app.use(express.urlencoded({ extended: true })); // Enable parsing of URL-encoded request bodies
 
-
-
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// Serve static files from public directory
 app.use(express.static('public'));
 
 app.get('/', (req, res)=> {
@@ -42,6 +46,29 @@ app.use('/api/v1/user', userRouter)
 
 app.use('/api/v1/course', courseRouter)
 
+app.use('/api/v1/upload', fileUploadRouter)
+
+// Initialize file upload service and create upload directories
+const initializeFileUpload = async () => {
+  try {
+    const fileUploadService = new FileUploadService();
+    await fileUploadService.createUploadDirectories([
+      'general',
+      'profile',
+      'student',
+      'trainer',
+      'course',
+      'document',
+      'assignment'
+    ]);
+    logger.info('✅ File upload directories created');
+  } catch (error) {
+    logger.error('❌ Error creating upload directories:', error);
+  }
+};
+
+initializeFileUpload();
+
 // 404 handler
 // app.all('*', (req, res, next) => {
 //   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
@@ -50,15 +77,10 @@ app.use('/api/v1/course', courseRouter)
 // // Global error handler middleware (last)
 app.use(errorHandler);
 
-
 app.use((err, req, res, next) => {
   logger.error(`${req.method} ${req.url} - ${err.message}`);
   res.status(500).send('Something went wrong');
 });
-
-
-
-
 
 // Start the server
 app.listen(port, () => {

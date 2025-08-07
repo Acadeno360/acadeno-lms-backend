@@ -22,6 +22,13 @@
     "nodemon": "^3.1.10",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "winston": "^3.17.0"
+    "winston": "^3.17.0",
+    "multer": "^1.4.5-lts.1",
+    "cloudinary": "^1.41.0",
+    "aws-sdk": "^2.1550.0",
+    "sharp": "^0.33.2",
+    "uuid": "^9.0.1",
+    "path": "^0.12.7",
+    "fs-extra": "^11.2.0"
   }
 }

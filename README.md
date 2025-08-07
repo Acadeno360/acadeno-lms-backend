@@ -42,14 +42,14 @@ npm start
 
 Once the server is running, you can access the interactive API documentation at:
 
-- **Swagger UI**: `http://localhost:5000/api-docs`
-- **OpenAPI JSON**: `http://localhost:5000/swagger.json`
-- **Health Check**: `http://localhost:5000/health`
+- **Swagger UI**: `http://localhost:8000/api-docs`
+- **OpenAPI JSON**: `http://localhost:8000/swagger.json`
+- **Health Check**: `http://localhost:8000/health`
 
 ### API Base URL
 
 ```
-http://localhost:5000/api/v1
+http://localhost:8000/api/v1
 ```
 
 ## 🔐 Authentication
@@ -255,7 +255,7 @@ maitexa-backend/
 
 ### Using the Swagger UI
 
-1. Navigate to `http://localhost:5000/api-docs`
+1. Navigate to `http://localhost:8000/api-docs`
 2. Click "Authorize" and enter your JWT token
 3. Test endpoints directly from the interface
 
@@ -263,12 +263,12 @@ maitexa-backend/
 
 ```bash
 # Login
-curl -X POST http://localhost:5000/api/v1/user/auth/login \
+curl -X POST http://localhost:8000/api/v1/user/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"password123","role":"student"}'
 
 # Use token for authenticated requests
-curl -X GET http://localhost:5000/api/v1/user/auth/me \
+curl -X GET http://localhost:8000/api/v1/user/auth/me \
   -H "Authorization: Bearer <your-token>"
 ```
 
@@ -277,11 +277,11 @@ curl -X GET http://localhost:5000/api/v1/user/auth/me \
 Create a `.env` file with the following variables:
 
 ```env
-PORT=5000
+PORT=8000
 MONGODB_URI=mongodb://localhost:27017/maitexa
 JWT_SECRET=your-secret-key
 JWT_EXPIRES_IN=90d
-BASE_URL=http://localhost:5000
+BASE_URL=http://localhost:8000
 ```
 
 ## 🤝 Contributing
@@ -302,7 +302,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 For support and questions:
 
 - Email: support@maitexa.com
-- Documentation: `http://localhost:5000/api-docs`
+- Documentation: `http://localhost:8000/api-docs`
 - Issues: Create an issue in the repository
 
 ---

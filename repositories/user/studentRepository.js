@@ -1,5 +1,5 @@
 
-import Student from '../../models/user/student.js';
+import Student from '../../models/user/Student.js';
 import BaseRepository from '../BaseRepository.js';
 
 

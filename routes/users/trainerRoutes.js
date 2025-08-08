@@ -2,6 +2,7 @@ import { Router } from "express";
 import trainerController from "../../controllers/users/trainerController.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { authorize } from "../../middlewares/authorize.js";
+import { singleFileUpload, handleMulterError, validateUploadedFiles } from "../../middlewares/fileUpload.js";
 
 const trainerRouter = Router()
 
@@ -220,5 +221,322 @@ trainerRouter.get('/list', authenticate, authorize('admin', 'trainer'), trainerC
  *               $ref: '#/components/schemas/Error'
  */
 trainerRouter.post('/create', authenticate, authorize('admin'), trainerController.createTrainer)
+
+/**
+ * @swagger
+ * /api/v1/user/trainer/{trainerId}/profile:
+ *   get:
+ *     summary: Get trainer profile
+ *     description: Retrieve a specific trainer's profile information including profile image
+ *     tags: [Trainers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: trainerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Trainer ID
+ *     responses:
+ *       200:
+ *         description: Trainer profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     trainer:
+ *                       $ref: '#/components/schemas/Trainer'
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Trainer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+trainerRouter.get('/:trainerId/profile', authenticate, authorize('admin', 'trainer'), trainerController.getTrainerProfile)
+
+/**
+ * @swagger
+ * /api/v1/user/trainer/{trainerId}/profile-image:
+ *   post:
+ *     summary: Upload trainer profile image
+ *     description: Upload a profile image for a specific trainer. Supports image optimization and thumbnail generation.
+ *     tags: [Trainers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: trainerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Trainer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile image file (JPG, PNG, GIF)
+ *               storageType:
+ *                 type: string
+ *                 enum: [local, cloudinary, s3]
+ *                 example: cloudinary
+ *                 description: Storage provider to use
+ *     responses:
+ *       200:
+ *         description: Profile image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Profile image uploaded successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     trainer:
+ *                       $ref: '#/components/schemas/Trainer'
+ *                     imageInfo:
+ *                       type: object
+ *                       properties:
+ *                         url:
+ *                           type: string
+ *                           example: "https://res.cloudinary.com/example/image/upload/v123/profile.jpg"
+ *                         thumbnailUrl:
+ *                           type: string
+ *                           example: "https://res.cloudinary.com/example/image/upload/v123/thumb_profile.jpg"
+ *                         filename:
+ *                           type: string
+ *                           example: "profile.jpg"
+ *       400:
+ *         description: Bad request - Invalid file or missing file
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Trainer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+trainerRouter.post('/:trainerId/profile-image',
+  authenticate,
+  authorize('admin'),
+  singleFileUpload({ storageType: 'memory', fieldName: 'file' }),
+  handleMulterError,
+  validateUploadedFiles({ required: true, maxFiles: 1, allowedTypes: ['image'] }),
+  trainerController.uploadProfileImage
+)
+
+/**
+ * @swagger
+ * /api/v1/user/trainer/{trainerId}/profile-image:
+ *   put:
+ *     summary: Update trainer profile image
+ *     description: Update a trainer's profile image. This will delete the old image and upload a new one.
+ *     tags: [Trainers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: trainerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Trainer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: New profile image file (JPG, PNG, GIF)
+ *               storageType:
+ *                 type: string
+ *                 enum: [local, cloudinary, s3]
+ *                 example: cloudinary
+ *                 description: Storage provider to use
+ *     responses:
+ *       200:
+ *         description: Profile image updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Profile image updated successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     trainer:
+ *                       $ref: '#/components/schemas/Trainer'
+ *                     imageInfo:
+ *                       type: object
+ *                       properties:
+ *                         url:
+ *                           type: string
+ *                           example: "https://res.cloudinary.com/example/image/upload/v123/profile.jpg"
+ *                         thumbnailUrl:
+ *                           type: string
+ *                           example: "https://res.cloudinary.com/example/image/upload/v123/thumb_profile.jpg"
+ *                         filename:
+ *                           type: string
+ *                           example: "profile.jpg"
+ *       400:
+ *         description: Bad request - Invalid file or missing file
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Trainer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+trainerRouter.put('/:trainerId/profile-image',
+  authenticate,
+  authorize('admin'),
+  singleFileUpload({ storageType: 'memory', fieldName: 'file' }),
+  handleMulterError,
+  validateUploadedFiles({ required: true, maxFiles: 1, allowedTypes: ['image'] }),
+  trainerController.updateProfileImage
+)
+
+/**
+ * @swagger
+ * /api/v1/user/trainer/{trainerId}/profile-image:
+ *   delete:
+ *     summary: Delete trainer profile image
+ *     description: Remove a trainer's profile image from storage and update the trainer record
+ *     tags: [Trainers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: trainerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Trainer ID
+ *     responses:
+ *       200:
+ *         description: Profile image deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Profile image deleted successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     trainer:
+ *                       $ref: '#/components/schemas/Trainer'
+ *       400:
+ *         description: Bad request - No profile image to delete
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Trainer not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+trainerRouter.delete('/:trainerId/profile-image',
+  authenticate,
+  authorize('admin'),
+  trainerController.deleteProfileImage
+)
 
 export default trainerRouter

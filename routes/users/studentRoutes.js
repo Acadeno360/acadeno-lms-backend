@@ -2,6 +2,7 @@ import { Router } from "express";
 import studentControllers from "../../controllers/users/studentController.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { authorize } from "../../middlewares/authorize.js";
+import { singleFileUpload, handleMulterError, validateUploadedFiles } from "../../middlewares/fileUpload.js";
 
 const studentRouter = Router()
 
@@ -236,5 +237,322 @@ studentRouter.get('/list', authenticate, authorize('admin', 'trainer'), studentC
  *               $ref: '#/components/schemas/Error'
  */
 studentRouter.post('/create', authenticate, authorize('admin'), studentControllers.createStudent)
+
+/**
+ * @swagger
+ * /api/v1/user/student/{studentId}/profile:
+ *   get:
+ *     summary: Get student profile
+ *     description: Retrieve a specific student's profile information including profile image
+ *     tags: [Students]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Student ID
+ *     responses:
+ *       200:
+ *         description: Student profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     student:
+ *                       $ref: '#/components/schemas/Student'
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Student not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+studentRouter.get('/:studentId/profile', authenticate, authorize('admin', 'trainer'), studentControllers.getStudentProfile)
+
+/**
+ * @swagger
+ * /api/v1/user/student/{studentId}/profile-image:
+ *   post:
+ *     summary: Upload student profile image
+ *     description: Upload a profile image for a specific student. Supports image optimization and thumbnail generation.
+ *     tags: [Students]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Student ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Profile image file (JPG, PNG, GIF)
+ *               storageType:
+ *                 type: string
+ *                 enum: [local, cloudinary, s3]
+ *                 example: cloudinary
+ *                 description: Storage provider to use
+ *     responses:
+ *       200:
+ *         description: Profile image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Profile image uploaded successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     student:
+ *                       $ref: '#/components/schemas/Student'
+ *                     imageInfo:
+ *                       type: object
+ *                       properties:
+ *                         url:
+ *                           type: string
+ *                           example: "https://res.cloudinary.com/example/image/upload/v123/profile.jpg"
+ *                         thumbnailUrl:
+ *                           type: string
+ *                           example: "https://res.cloudinary.com/example/image/upload/v123/thumb_profile.jpg"
+ *                         filename:
+ *                           type: string
+ *                           example: "profile.jpg"
+ *       400:
+ *         description: Bad request - Invalid file or missing file
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Student not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+studentRouter.post('/:studentId/profile-image',
+  authenticate,
+  authorize('admin', 'trainer'),
+  singleFileUpload({ storageType: 'memory', fieldName: 'file' }),
+  handleMulterError,
+  validateUploadedFiles({ required: true, maxFiles: 1, allowedTypes: ['image'] }),
+  studentControllers.uploadProfileImage
+)
+
+/**
+ * @swagger
+ * /api/v1/user/student/{studentId}/profile-image:
+ *   put:
+ *     summary: Update student profile image
+ *     description: Update a student's profile image. This will delete the old image and upload a new one.
+ *     tags: [Students]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Student ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: New profile image file (JPG, PNG, GIF)
+ *               storageType:
+ *                 type: string
+ *                 enum: [local, cloudinary, s3]
+ *                 example: cloudinary
+ *                 description: Storage provider to use
+ *     responses:
+ *       200:
+ *         description: Profile image updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Profile image updated successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     student:
+ *                       $ref: '#/components/schemas/Student'
+ *                     imageInfo:
+ *                       type: object
+ *                       properties:
+ *                         url:
+ *                           type: string
+ *                           example: "https://res.cloudinary.com/example/image/upload/v123/profile.jpg"
+ *                         thumbnailUrl:
+ *                           type: string
+ *                           example: "https://res.cloudinary.com/example/image/upload/v123/thumb_profile.jpg"
+ *                         filename:
+ *                           type: string
+ *                           example: "profile.jpg"
+ *       400:
+ *         description: Bad request - Invalid file or missing file
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Student not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+studentRouter.put('/:studentId/profile-image',
+  authenticate,
+  authorize('admin', 'trainer'),
+  singleFileUpload({ storageType: 'memory', fieldName: 'file' }),
+  handleMulterError,
+  validateUploadedFiles({ required: true, maxFiles: 1, allowedTypes: ['image'] }),
+  studentControllers.updateProfileImage
+)
+
+/**
+ * @swagger
+ * /api/v1/user/student/{studentId}/profile-image:
+ *   delete:
+ *     summary: Delete student profile image
+ *     description: Remove a student's profile image from storage and update the student record
+ *     tags: [Students]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: studentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Student ID
+ *     responses:
+ *       200:
+ *         description: Profile image deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: Profile image deleted successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     student:
+ *                       $ref: '#/components/schemas/Student'
+ *       400:
+ *         description: Bad request - No profile image to delete
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - Token missing or invalid
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Student not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+studentRouter.delete('/:studentId/profile-image',
+  authenticate,
+  authorize('admin', 'trainer'),
+  studentControllers.deleteProfileImage
+)
 
 export default studentRouter

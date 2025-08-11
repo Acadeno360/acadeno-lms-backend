@@ -18,11 +18,17 @@ const authController = {};
 authController.login = catchAsync(async (req, res, next) => {
   const { email, password, role } = req.body;
 
-  if (!email || !password || !role) {
+  if (!email || !password ) {
     return next(new AppError("Please provide email, password and role", 400));
   }
 
-  const user = await User.findOne({ email, role }).select("+password");
+  const query = { email }; // default query for user
+
+  if (role) {
+    query.role = role;
+  }
+
+  const user = await User.findOne(query).select("+password");
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return next(new AppError("Incorrect email, password or role", 401));

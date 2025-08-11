@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import User from './index.js';
 
 const AdminSchema = new mongoose.Schema({

@@ -3,6 +3,7 @@ import studentRouter from './studentRoutes.js'
 import authController from '../../controllers/users/authController.js'
 import { authenticate } from '../../middlewares/authenticate.js'
 import trainerRouter from './trainerRoutes.js'
+import adminRouter from './adminRoutes.js'
 
 const userRouter = Router()
 
@@ -119,5 +120,7 @@ userRouter.get('/auth/me', authenticate, authController.getMe)
 userRouter.use('/student', studentRouter)
 
 userRouter.use('/trainer', trainerRouter)
+
+userRouter.use('/admin', adminRouter)
 
 export default userRouter

@@ -1,5 +1,5 @@
-import Admin from "../../models/user/Admin";
-import BaseRepository from "../BaseRepository";
+import Admin from "../../models/user/Admin.js";
+import BaseRepository from "../BaseRepository.js";
 
 
 class AdminRepository extends BaseRepository {

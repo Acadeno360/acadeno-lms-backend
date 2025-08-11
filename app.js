@@ -25,9 +25,32 @@ connectDB()
 app.use(express.urlencoded({ extended: true })); // Enable parsing of URL-encoded request bodies
 
 app.use(cors({
-  origin: '*',
+  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://api.maitexa.com/'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'x-request-id',
+    'x-api-key',
+    'x-client-version',
+    'x-client-name',
+    'x-correlation-id',
+    'x-forwarded-for',
+    'x-forwarded-proto',
+    'x-real-ip',
+    'x-requested-with',
+    'accept',
+    'accept-encoding',
+    'accept-language',
+    'cache-control',
+    'connection',
+    'host',
+    'origin',
+    'referer',
+    'user-agent'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
 }));
 
 // Serve static files from uploads directory
@@ -39,6 +62,12 @@ app.use(express.static('public'));
 app.get('/', (req, res)=> {
   res.send('Hello world')
 })
+
+// Redirect old auth endpoints to new v1 endpoints for backward compatibility
+app.use('/api/auth', (req, res, next) => {
+  req.url = req.url.replace('/api/auth', '/api/v1/user/auth');
+  next();
+});
 
 swaggerDocs(app);
 

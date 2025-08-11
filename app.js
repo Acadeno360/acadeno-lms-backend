@@ -25,7 +25,7 @@ connectDB()
 app.use(express.urlencoded({ extended: true })); // Enable parsing of URL-encoded request bodies
 
 app.use(cors({
-  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://api.maitexa.com/'],
+  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://api.maitexa.com/', 'https://api.maitexa.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [
     'Content-Type', 
